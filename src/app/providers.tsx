@@ -15,7 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <AuthProvider
           requiredTokenAmount="1"
-          tokenAddress="0xdAC17F958D2ee523a2206206994597C13D831ec7">
+          tokenAddress="0x44857b8f3a6fcfa1548570cf637fc8330683bf3d">
           {children}
         </AuthProvider>
       </QueryClientProvider>
