@@ -13,7 +13,7 @@ export function WalletOptions() {
   const { connectors, connect } = useConnect();
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-5 self-end">
       Connect with
       {connectors.map((connector) => {
         return (
