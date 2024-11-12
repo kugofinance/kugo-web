@@ -11,7 +11,7 @@ export async function GET() {
 
     // Make request to Dextools API
     const response = await fetch(
-      `https://public-api.dextools.io/standard/v2/token/ether/0xC5903ceD3c193B89Cbbb5a0aF584494c3D5D289d/info`, // Replace with your token address
+      `https://public-api.dextools.io/standard/v2/token/ether/0x44857b8f3a6fcfa1548570cf637fc8330683bf3d/info`, // Replace with your token address
       {
         headers: {
           "X-API-Key": apiKey,
