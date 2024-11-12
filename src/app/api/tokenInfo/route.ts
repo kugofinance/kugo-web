@@ -1,14 +1,4 @@
-// app/api/token-metrics/route.ts
 import { NextResponse } from "next/server";
-
-interface TokenMetrics {
-  circulatingSupply: number;
-  totalSupply: number;
-  mcap: number;
-  fdv: number;
-  holders: number;
-  transactions: number;
-}
 
 export async function GET() {
   try {
@@ -43,31 +33,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
-
-// Helper functions for formatting
-function formatCurrency(value: number): string {
-  if (value >= 1e9) {
-    return `$${(value / 1e9).toFixed(2)}B`;
-  }
-  if (value >= 1e6) {
-    return `$${(value / 1e6).toFixed(2)}M`;
-  }
-  if (value >= 1e3) {
-    return `$${(value / 1e3).toFixed(2)}K`;
-  }
-  return `$${value.toFixed(2)}`;
-}
-
-function formatNumber(value: number): string {
-  if (value >= 1e9) {
-    return `${(value / 1e9).toFixed(2)}B`;
-  }
-  if (value >= 1e6) {
-    return `${(value / 1e6).toFixed(2)}M`;
-  }
-  if (value >= 1e3) {
-    return `${(value / 1e3).toFixed(2)}K`;
-  }
-  return value.toString();
 }
