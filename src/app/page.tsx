@@ -54,7 +54,10 @@ export default function Home() {
               <h2>Access Denied</h2>
               <p>{error}</p>
               {tokenBalance !== "0" && (
-                <p>Current balance: {tokenBalance} tokens</p>
+                <p>
+                  Current balance: {tokenBalance} USDT tokens. You must have at
+                  least 1.
+                </p>
               )}
             </div>
           ) : (
