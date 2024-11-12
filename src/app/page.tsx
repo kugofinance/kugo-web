@@ -55,7 +55,7 @@ export default function Home() {
               <p>{error}</p>
               {tokenBalance !== "0" && (
                 <p>
-                  Current balance: {tokenBalance} USDT tokens. You must have at
+                  Current balance: {tokenBalance} KUGO tokens. You must have at
                   least 1.
                 </p>
               )}
