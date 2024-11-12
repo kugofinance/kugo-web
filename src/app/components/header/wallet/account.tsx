@@ -15,7 +15,7 @@ export function Account() {
   const { hasAccess, tokenBalance } = useAuth();
 
   return (
-    <div className="flex flex-row gap-4 items-center">
+    <div className="flex flex-row gap-4 items-center self-end">
       <AccountMenu
         address={address}
         ensName={ensName}
