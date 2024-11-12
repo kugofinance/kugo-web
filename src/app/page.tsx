@@ -60,7 +60,7 @@ export default function Home() {
           ) : (
             // Your main content when everything is ready
             <div className="">
-              <div className="bg-opacity-90 bg-black h-screen w-screen absolute"></div>
+              <div className="bg-opacity-90 bg-black h-screen w-screen absolute -z-10"></div>
               <main className={"flex w-full justify-center items-end"}>
                 <div className="w-full justify-center items-start flex gap-2">
                   <div>
@@ -72,7 +72,7 @@ export default function Home() {
                     </Flex>
                   </div>
                   <YieldSimulator />
-                  <div className="absolute bottom-5 left-5 flex justify-start w-full">
+                  <div className="absolute bottom-1 left-5 flex justify-start w-full z-99">
                     <Image
                       src="/images/kugofi logo.png"
                       width={200}
@@ -91,7 +91,7 @@ export default function Home() {
       {/* Video that's always present */}
       <video
         src="/media/video.mp4"
-        className="w-full h-full"
+        className="w-full h-full -z-1"
         autoPlay
         muted
         loop // Added loop if you want it to keep playing
