@@ -15,7 +15,7 @@ export const Header = () => (
       <Login />
 
       <TabNav.Root>
-        <TabNav.Link href="https://www.dextools.io/app/en/ether/pair-explorer/">
+        <TabNav.Link href="https://www.dextools.io/app/en/ether/pair-explorer/0x3f36074214a47e9ead86498cd867053875264d47?t=1731478287699">
           Dextools
         </TabNav.Link>
         <TabNav.Link href="https://etherscan.io/token/0x44857b8f3a6fcfa1548570cf637fc8330683bf3d">
