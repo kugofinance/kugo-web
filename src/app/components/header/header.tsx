@@ -23,9 +23,7 @@ export const Header = () => (
         </TabNav.Link>
         <TabNav.Link href="https://www.x.com/KIROKUGO">X</TabNav.Link>
         <TabNav.Link href="https://www.t.me/kirokugo">Telegram</TabNav.Link>
-        <TabNav.Link href="https://www.kugo.gitbook.io/kugo">
-          Gitbook
-        </TabNav.Link>
+        <TabNav.Link href="https://kugo.gitbook.io/kugo">Gitbook</TabNav.Link>
         <TabNav.Link href="https://www.medium.com/@kirokugo">
           Medium
         </TabNav.Link>

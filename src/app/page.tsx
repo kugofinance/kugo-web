@@ -56,7 +56,7 @@ export default function Home() {
               {tokenBalance !== "0" && (
                 <p>
                   Current balance: {tokenBalance} KUGO tokens. You must hold at
-                  least 3,000,000,000 KUGO.
+                  least 500,000,000 KUGO.
                 </p>
               )}
             </div>

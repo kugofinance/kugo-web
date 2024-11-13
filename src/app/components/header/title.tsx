@@ -1,4 +1,4 @@
-import { Heading, Text, Card, Separator, Code } from "@radix-ui/themes";
+import { Heading, Text, Card, Code } from "@radix-ui/themes";
 
 export const Title = () => {
   return (
