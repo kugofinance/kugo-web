@@ -310,7 +310,8 @@ export function ZeroXSwap() {
               )}
               {quote.buyAmount && (
                 <div>
-                  You Receive: {formatUnits(BigInt(quote.buyAmount), 18)} KUGO
+                  {console.log(typeof quote.buyAmount, quote.buyAmount)}You
+                  Receive: {formatUnits(BigInt(quote.buyAmount), 9)} KUGO
                 </div>
               )}
               <div>

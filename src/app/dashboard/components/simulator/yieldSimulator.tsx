@@ -44,7 +44,7 @@ export const YieldSimulator = () => {
   };
 
   return (
-    <Card className="w-full flex-grow-0 min-h-max">
+    <Card className="w-full flex-grow-0 h-full">
       <Tabs.Root defaultValue="projection">
         <Tabs.List>
           <Tabs.Trigger value="projection">Yield Projection</Tabs.Trigger>

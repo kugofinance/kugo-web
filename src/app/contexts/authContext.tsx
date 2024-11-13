@@ -1,22 +1,27 @@
-// src/app/contexts/authContexts.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAccount, useContractRead } from "wagmi";
+import { useAccount, useReadContracts } from "wagmi";
 import { formatUnits } from "viem";
+
+interface TokenBalance {
+  address: string;
+  balance: string;
+  hasRequiredAmount: boolean;
+}
 
 interface AuthContextType {
   address: string | undefined;
   isConnected: boolean;
   hasAccess: boolean;
   isLoading: boolean;
-  tokenBalance: string | null;
+  tokenBalances: TokenBalance[];
   error: string | null;
-  isInitialized: boolean; // New flag to track initial data fetch
+  isInitialized: boolean;
 }
 
 interface AuthProviderProps {
   children: React.ReactNode;
   requiredTokenAmount: string;
-  tokenAddress: `0x${string}`;
+  tokenAddresses: `0x${string}`[];
 }
 
 const ERC20_ABI = [
@@ -41,36 +46,40 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({
   children,
   requiredTokenAmount,
-  tokenAddress,
+  tokenAddresses,
 }: AuthProviderProps) => {
   const { address, isConnected } = useAccount();
   const [hasAccess, setHasAccess] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState<string | null>(null);
+  const [tokenBalances, setTokenBalances] = useState<TokenBalance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Get token balance
-  const { data: balance, isLoading: isBalanceLoading } = useContractRead({
-    address: tokenAddress,
-    abi: ERC20_ABI,
-    functionName: "balanceOf",
-    args: address ? [address] : undefined,
-    // enabled: !!address,
-  });
+  // Prepare contract reads for all tokens
+  const contractReads = tokenAddresses.flatMap((tokenAddress) => [
+    {
+      address: tokenAddress,
+      abi: ERC20_ABI,
+      functionName: "balanceOf",
+      args: address ? [address] : undefined,
+    },
+    {
+      address: tokenAddress,
+      abi: ERC20_ABI,
+      functionName: "decimals",
+    },
+  ]);
 
-  // Get decimals
-  const { data: decimals, isLoading: isDecimalsLoading } = useContractRead({
-    address: tokenAddress,
-    abi: ERC20_ABI,
-    functionName: "decimals",
-    // enabled: !!address,
+  // Read all token balances and decimals in one go
+  const { data: results, isLoading: isContractsLoading } = useReadContracts({
+    contracts: contractReads,
+    enabled: isConnected && !!address,
   });
 
   useEffect(() => {
     // Reset states when wallet disconnects
     if (!isConnected) {
-      setTokenBalance(null);
+      setTokenBalances([]);
       setHasAccess(false);
       setError(null);
       setIsLoading(false);
@@ -78,50 +87,74 @@ export const AuthProvider = ({
       return;
     }
 
-    // Wait for both balance and decimals to load
-    if (isBalanceLoading || isDecimalsLoading) {
+    // Wait for contract reads to complete
+    if (isContractsLoading) {
       setIsLoading(true);
       return;
     }
 
-    // Handle case where wallet is connected but balance fetch failed
-    if (!balance || !decimals) {
-      setTokenBalance("0");
-      setHasAccess(false);
-      setError("No tokens found in wallet");
-      setIsLoading(false);
-      setIsInitialized(true);
-      return;
-    }
-
     try {
-      const formattedBalance = formatUnits(balance, decimals);
-      setTokenBalance(formattedBalance);
+      const processedBalances: TokenBalance[] = tokenAddresses.map(
+        (tokenAddress, index) => {
+          // Get balance and decimals from results
+          const balanceResult = results[index * 2];
+          const decimalsResult = results[index * 2 + 1];
 
-      const hasRequiredAmount =
-        parseFloat(formattedBalance) >= parseFloat(requiredTokenAmount);
-      setHasAccess(hasRequiredAmount);
+          // Check if we have valid results
+          if (
+            balanceResult === undefined ||
+            decimalsResult === undefined ||
+            balanceResult.status === "failure" ||
+            decimalsResult.status === "failure"
+          ) {
+            return {
+              address: tokenAddress,
+              balance: "0",
+              hasRequiredAmount: false,
+            };
+          }
 
+          // Safe to access .result as we've checked for failure status
+          const balance = balanceResult.result;
+          const decimals = decimalsResult.result;
+
+          const formattedBalance = formatUnits(balance, decimals);
+          const hasRequiredAmount =
+            parseFloat(formattedBalance) >= parseFloat(requiredTokenAmount);
+
+          return {
+            address: tokenAddress,
+            balance: formattedBalance,
+            hasRequiredAmount,
+          };
+        }
+      );
+
+      const hasAnyRequiredAmount = processedBalances.some(
+        (token) => token.hasRequiredAmount
+      );
+
+      setTokenBalances(processedBalances);
+      setHasAccess(hasAnyRequiredAmount);
       setError(
-        hasRequiredAmount
+        hasAnyRequiredAmount
           ? null
-          : `Minimum ${requiredTokenAmount} tokens required`
+          : `Minimum ${requiredTokenAmount} tokens required in any of the supported tokens`
       );
       setIsInitialized(true);
     } catch (err) {
-      setError("Error processing token balance");
+      console.error("Token balance processing error:", err);
+      setError("Error processing token balances");
       setHasAccess(false);
-      console.log(err);
     } finally {
       setIsLoading(false);
     }
   }, [
-    balance,
-    decimals,
-    isBalanceLoading,
-    isDecimalsLoading,
+    results,
+    isContractsLoading,
     requiredTokenAmount,
     isConnected,
+    tokenAddresses,
   ]);
 
   const contextValue: AuthContextType = {
@@ -129,7 +162,7 @@ export const AuthProvider = ({
     isConnected,
     hasAccess,
     isLoading,
-    tokenBalance,
+    tokenBalances,
     error,
     isInitialized,
   };
@@ -148,4 +181,4 @@ export const useAuth = () => {
   return context;
 };
 
-export type { AuthContextType };
+export type { AuthContextType, TokenBalance };

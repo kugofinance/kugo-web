@@ -18,28 +18,28 @@ const StatusCallouts = ({
   return (
     <Flex direction="column" gap="3" className="w-full max-w-md mx-auto">
       {!isInitialized ? (
-        <Callout.Root size="2" variant="surface">
+        <Callout.Root size="1" variant="surface">
           <Callout.Icon>
             <UpdateIcon className="animate-spin" />
           </Callout.Icon>
           <Text>Initializing...</Text>
         </Callout.Root>
       ) : !isConnected ? (
-        <Callout.Root size="2" variant="surface" color="blue">
+        <Callout.Root size="1" variant="surface" color="blue">
           <Callout.Icon>
             <PersonIcon />
           </Callout.Icon>
           <Text>Please connect your wallet to continue</Text>
         </Callout.Root>
       ) : isLoading ? (
-        <Callout.Root size="2" variant="surface" color="gray">
+        <Callout.Root size="1" variant="surface" color="gray">
           <Callout.Icon>
             <UpdateIcon className="animate-spin" />
           </Callout.Icon>
           <Text>Loading token balance...</Text>
         </Callout.Root>
       ) : !hasAccess ? (
-        <Callout.Root size="2" variant="surface" color="orange">
+        <Callout.Root size="1" variant="surface" color="orange">
           <Flex direction="column" gap="2">
             <Flex gap="2" align="center">
               <CrossCircledIcon />
@@ -49,7 +49,7 @@ const StatusCallouts = ({
             </Flex>
             {error && <Text>{error}</Text>}
             {tokenBalance !== "0" && (
-              <Text>Current balance: {tokenBalance} tokens.</Text>
+              <Text>Current balance: {tokenBalance || 0} tokens.</Text>
             )}
           </Flex>
         </Callout.Root>

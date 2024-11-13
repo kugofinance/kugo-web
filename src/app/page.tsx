@@ -55,10 +55,10 @@ export default function Home() {
             />
           ) : (
             // Your main content when everything is ready
-            <div className="">
+            <div className="h-full">
               <div className="bg-opacity-90 bg-black h-screen w-screen absolute -z-10 pointer-events-none"></div>
-              <main className={"flex w-full justify-center items-end"}>
-                <div className="w-full justify-center items-start flex gap-2">
+              <main className={"flex h-full w-full justify-center items-end"}>
+                <div className="w-full h-full justify-center items-start flex gap-2">
                   <div>
                     <YieldFarming />
                     <Flex gap={"2"} mt={"1"} className="justify-end">
@@ -67,16 +67,16 @@ export default function Home() {
                       <PriceDisplay />
                     </Flex>
                   </div>
-                  <div>
+                  <div className="h-full">
                     <YieldSimulator />
-                    <Flex className="w-full justify-end mr-4 mt-2">
+                    {/* <Flex className="w-full justify-end mr-4 mt-2">
                       <Image
                         src="/images/kugofi logo.png"
                         width={200}
                         height={100}
                         alt="logo"
                       />
-                    </Flex>
+                    </Flex> */}
                   </div>
                 </div>
               </main>
