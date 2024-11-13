@@ -1,5 +1,6 @@
 "use client";
-import { Button } from "@radix-ui/themes";
+import { Link1Icon } from "@radix-ui/react-icons";
+import { Button, DropdownMenu, ScrollArea } from "@radix-ui/themes";
 import Image from "next/image";
 import * as React from "react";
 import { useConnect } from "wagmi";
@@ -13,26 +14,33 @@ export function WalletOptions() {
   const { connectors, connect } = useConnect();
 
   return (
-    <div className="flex items-center gap-5 self-end">
-      Connect with
-      {connectors.map((connector) => {
-        return (
-          <Button
-            variant="surface"
-            key={connector.uid}
-            onClick={() => connect({ connector })}>
-            {connector_icons[connector.name] && (
-              <Image
-                src={connector_icons[connector.name]}
-                width={25}
-                height={25}
-                alt="Metamask Logo"
-              />
-            )}
-            {connector.name}
+    <div className="flex items-center gap-2 self-end">
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger className="">
+          <Button variant="surface">
+            <Link1Icon />
+            Connect Wallet
           </Button>
-        );
-      })}
+        </DropdownMenu.Trigger>
+
+        <DropdownMenu.Content sideOffset={5}>
+          {connectors.map((connector) => (
+            <DropdownMenu.Item
+              key={connector.uid}
+              onClick={() => connect({ connector })}>
+              {connector_icons[connector.name] && (
+                <Image
+                  src={connector_icons[connector.name]}
+                  width={20}
+                  height={20}
+                  alt={`${connector.name} Logo`}
+                />
+              )}
+              {connector.name}
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </div>
   );
 }
