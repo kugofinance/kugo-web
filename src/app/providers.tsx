@@ -14,7 +14,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider
-          requiredTokenAmount="1"
+          requiredTokenAmount="15000000"
           // requiredTokenAmount="500000000"
           tokenAddress="0x44857b8f3a6fcfa1548570cf637fc8330683bf3d">
           {children}
