@@ -139,7 +139,7 @@ export const AuthProvider = ({
       setError(
         hasAnyRequiredAmount
           ? null
-          : `Minimum ${requiredTokenAmount} tokens required in any of the supported tokens`
+          : `Minimum ${requiredTokenAmount} tokens required in KUGO or KIRO`
       );
       setIsInitialized(true);
     } catch (err) {

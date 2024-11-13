@@ -4,7 +4,6 @@ import { Card, Text } from "@radix-ui/themes";
 
 export const PriceBanner = () => {
   const { eth, btc, isError, isLoading } = usePriceFeeds();
-  console.log(eth);
   if (isLoading) {
     return <div>Loading prices...</div>;
   }

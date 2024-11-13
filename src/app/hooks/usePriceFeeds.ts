@@ -28,8 +28,6 @@ export const usePriceFeeds = () => {
     ],
   });
 
-  console.log(priceData);
-
   const processPrice = (data: any): PriceFeedData | null => {
     if (!data?.result) return null;
 

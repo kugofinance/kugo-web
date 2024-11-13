@@ -57,7 +57,6 @@ export const useAavePosition = (address?: string) => {
     args: isValidAddress ? [address] : undefined,
     enabled: isValidAddress,
   });
-  console.log(accountData);
   // Just return raw data, no formatting
   return accountData;
 };

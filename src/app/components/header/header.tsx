@@ -1,3 +1,4 @@
+import CopyAddress from "./copyAddress";
 import { PriceBanner } from "./priceBanner";
 import { Title } from "./title";
 import { Login } from "./wallet/login";
@@ -6,9 +7,7 @@ export const Header = () => (
   <div className="w-full flex h-20 justify-between items-start">
     <div>
       <Title />
-      <Text size="1" className="ml-2">
-        CA: 0x44857b8F3A6fcfa1548570cF637Fc8330683Bf3d
-      </Text>
+      <CopyAddress />
     </div>
     <PriceBanner />
     <div className="flex flex-col justify-end">
