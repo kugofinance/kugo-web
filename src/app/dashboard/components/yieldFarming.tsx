@@ -1,16 +1,11 @@
-import { Card, Heading, Separator, Callout } from "@radix-ui/themes";
-import {
-  ExclamationTriangleIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
+import { Card, Callout, Flex, Text } from "@radix-ui/themes";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { useAccount, useBalance, useReadContract } from "wagmi";
 import { formatEther } from "viem";
 import { ADDRESSES } from "../constants/constants";
-import { HealthFactor } from "./health/healthFactor";
 import { DepositForm } from "./deposit/deposit";
 import { BorrowForm } from "./borrow/borrow";
 import { PositionManager } from "./positions/positionsManager";
-import { add } from "lodash";
 
 export const YieldFarming = () => {
   const { address } = useAccount();
@@ -58,35 +53,34 @@ export const YieldFarming = () => {
 
   return (
     <div className="flex items-start h-[430px] w-full gap-2">
-      <PositionManager address={address} />
-      <Card className="h-full w-full">
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="p-4  rounded">
-            <p className="text-sm text-gray-500">ETH Balance</p>
-            <p className="text-xl font-bold">
+      <div className="h-full flex flex-col gap-1">
+        <Card className="h-3/4">
+          <div className="p-4 rounded">
+            <Text className="text-sm text-gray-500">ETH Balance</Text>
+            <br />
+            <Text className="text-xl font-bold">
               {ethBalance ? formatEther(ethBalance.value).slice(0, 8) : "0"} ETH
-            </p>
+            </Text>
           </div>
-          <HealthFactor healthFactor={accountData?.[5]} />
-        </div>
 
-        <div className="space-y-6">
-          <DepositForm address={address} balance={ethBalance?.value} />
-          <BorrowForm address={address} maxBorrow={accountData?.[2]} />
-        </div>
+          <div className="space-y-8">
+            <DepositForm address={address} balance={ethBalance?.value} />
+            <BorrowForm address={address} maxBorrow={accountData?.[2]} />
+          </div>
+        </Card>
 
-        <Callout.Root className="mt-6">
-          <Callout.Icon className="h-4 w-4">
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text size={"1"}>
-            Deposit ETH as collateral to enable borrowing • Borrow WBTC against
-            your ETH collateral • Keep health factor above 1.0 to avoid
-            liquidation • When WBTC price increases relative to ETH, repay loan
-            for profit ⚠️ Always maintain a safe health factor
-          </Callout.Text>
-        </Callout.Root>
-      </Card>
+        <Card className="h-1/4">
+          <Callout.Root color="amber">
+            <Callout.Icon className="h-4 w-4">
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text size={"1"}>
+              Always maintain a safe health factor of 1.0 or greater
+            </Callout.Text>
+          </Callout.Root>
+        </Card>
+      </div>
+      <PositionManager address={address} />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { YieldSimulator } from "./dashboard/components/simulator/yieldSimulator"
 import Image from "next/image";
 import { TokenMetricsGrid } from "./components/tokenInfo/metricsGrid";
 import { Footer } from "./components/footer/footer";
+import StatusCallouts from "./components/login/statusCallouts";
 
 export default function Home() {
   // const [chartData, setChartData] = useState([]);
@@ -39,27 +40,19 @@ export default function Home() {
       {/* Card with conditional content */}
       <Card className="w-full absolute bg-opacity-50 bg-black">
         <Flex>
-          {!isInitialized ? (
-            <div className="justify-center w-full flex">Initializing...</div>
-          ) : !isConnected ? (
-            <div className="justify-center w-full flex">
-              Please connect your wallet to continue
-            </div>
-          ) : isLoading ? (
-            <div className="justify-center w-full flex">
-              Loading token balance...
-            </div>
-          ) : !hasAccess ? (
-            <div className="justify-center w-full flex">
-              <h2>Access Denied</h2>
-              <p>{error}</p>
-              {tokenBalance !== "0" && (
-                <p>
-                  Current balance: {tokenBalance} KUGO tokens. You must hold at
-                  least 500,000,000 KUGO.
-                </p>
-              )}
-            </div>
+          {!isInitialized ||
+          !isConnected ||
+          !hasAccess ||
+          isLoading ||
+          error ? (
+            <StatusCallouts
+              isInitialized={isInitialized}
+              isConnected={isConnected}
+              isLoading={isLoading}
+              hasAccess={hasAccess}
+              error={error}
+              tokenBalance={tokenBalance}
+            />
           ) : (
             // Your main content when everything is ready
             <div className="">
@@ -74,15 +67,16 @@ export default function Home() {
                       <PriceDisplay />
                     </Flex>
                   </div>
-                  <YieldSimulator />
-                  <div className="absolute bottom-1 left-5 flex justify-start w-full">
-                    <Image
-                      src="/images/kugofi logo.png"
-                      width={200}
-                      height={100}
-                      alt="logo"
-                    />
-                    <Footer />
+                  <div>
+                    <YieldSimulator />
+                    <Flex className="w-full justify-end mr-4 mt-2">
+                      <Image
+                        src="/images/kugofi logo.png"
+                        width={200}
+                        height={100}
+                        alt="logo"
+                      />
+                    </Flex>
                   </div>
                 </div>
               </main>

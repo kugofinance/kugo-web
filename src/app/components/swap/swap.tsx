@@ -1,13 +1,43 @@
-// components/Swap/ZeroXSwap.tsx
 import { useState, useEffect } from "react";
 import {
   useAccount,
   useBalance,
-  usePrepareTransactionRequest,
+  useSimulateContract,
   useWriteContract,
+  useWaitForTransactionReceipt,
+  useReadContract,
 } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { Button, Card, Select, Spinner, TextField } from "@radix-ui/themes";
+import { Button, Card, Select, TextField, Callout } from "@radix-ui/themes";
+import {
+  CrossCircledIcon,
+  UpdateIcon,
+  CheckCircledIcon,
+} from "@radix-ui/react-icons";
+
+// ERC20 ABI for approval
+const ERC20_ABI = [
+  {
+    constant: true,
+    inputs: [
+      { name: "_owner", type: "address" },
+      { name: "_spender", type: "address" },
+    ],
+    name: "allowance",
+    outputs: [{ name: "", type: "uint256" }],
+    type: "function",
+  },
+  {
+    constant: false,
+    inputs: [
+      { name: "_spender", type: "address" },
+      { name: "_value", type: "uint256" },
+    ],
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    type: "function",
+  },
+] as const;
 
 interface SwapQuote {
   price: string;
@@ -43,16 +73,78 @@ export function ZeroXSwap() {
   const [quote, setQuote] = useState<SwapQuote | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [slippage, setSlippage] = useState("0.01"); // Default 1%
+  const [slippage, setSlippage] = useState("0.01");
   const [customSlippage, setCustomSlippage] = useState("");
   const [showCustomSlippage, setShowCustomSlippage] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [needsApproval, setNeedsApproval] = useState(false);
 
-  const TOKEN_ADDRESS = "0xC5903ceD3c193B89Cbbb5a0aF584494c3D5D289d";
+  const TOKEN_ADDRESS = "0x44857b8f3a6fcfa1548570cf637fc8330683bf3d";
+
+  // Check allowance
+  const { data: allowance } = useReadContract({
+    address: TOKEN_ADDRESS as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: "allowance",
+    args: [address as `0x${string}`, quote?.allowanceTarget as `0x${string}`],
+    enabled: !!address && !!quote?.allowanceTarget,
+    watch: true,
+  });
+
+  // Update needsApproval when allowance changes
+  useEffect(() => {
+    if (allowance !== undefined && quote) {
+      setNeedsApproval(allowance < BigInt(quote.sellAmount));
+    }
+  }, [allowance, quote]);
 
   const { data: ethBalance } = useBalance({
     address,
     watch: true,
   });
+
+  // Prepare approval transaction
+  const { data: approvalSimulateData } = useSimulateContract({
+    address: TOKEN_ADDRESS as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: "approve",
+    args: [
+      quote?.allowanceTarget as `0x${string}`,
+      BigInt(quote?.sellAmount || "0"),
+    ],
+    enabled: needsApproval && !!quote?.allowanceTarget,
+  });
+
+  // Execute approval
+  const { writeContract: approve, isPending: isApproving } = useWriteContract();
+
+  // Monitor approval transaction
+  const { isLoading: isApprovalConfirming, isSuccess: isApprovalConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: txHash as `0x${string}`,
+      enabled: !!txHash && needsApproval,
+    });
+
+  // Simulate the swap transaction
+  const { data: simulateData } = useSimulateContract({
+    address: quote?.to as `0x${string}`,
+    abi: [], // 0x router doesn't need ABI
+    functionName: "swap",
+    value: quote?.value ? BigInt(quote.value) : BigInt(0),
+    data: quote?.data as `0x${string}`,
+    account: address,
+    enabled: !!quote && !!address && !needsApproval,
+  });
+
+  // Execute the swap transaction
+  const { writeContract: swap, isPending: isSwapping } = useWriteContract();
+
+  // Monitor swap transaction
+  const { isLoading: isSwapConfirming, isSuccess: isSwapConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: txHash as `0x${string}`,
+      enabled: !!txHash && !needsApproval,
+    });
 
   const fetchQuote = async () => {
     if (!amount || !address) return;
@@ -110,16 +202,40 @@ export function ZeroXSwap() {
     }
   };
 
-  const { config } = usePrepareTransactionRequest({
-    address: quote?.to as `0x${string}`,
-    abi: [],
-    functionName: "swap",
-    data: quote?.data as `0x${string}`,
-    value: quote?.value ? BigInt(quote.value) : BigInt(0),
-    enabled: !!quote,
-  });
+  const handleApprove = async () => {
+    if (!quote?.allowanceTarget || !approvalSimulateData) return;
 
-  const { write: swap, isLoading: isSwapping } = useWriteContract(config);
+    try {
+      const hash = await approve({
+        ...approvalSimulateData,
+      });
+
+      setTxHash(hash);
+    } catch (err) {
+      console.error("Approval failed:", err);
+      setError(err instanceof Error ? err.message : "Approval failed");
+    }
+  };
+
+  const handleSwap = async () => {
+    if (!quote || !simulateData) return;
+
+    try {
+      const hash = await swap({
+        address: quote.to as `0x${string}`,
+        data: quote.data as `0x${string}`,
+        value: BigInt(quote.value),
+      });
+
+      setTxHash(hash);
+    } catch (err) {
+      console.error("Swap failed:", err);
+      setError(err instanceof Error ? err.message : "Swap failed");
+    }
+  };
+
+  const isTransacting =
+    isApproving || isApprovalConfirming || isSwapping || isSwapConfirming;
 
   return (
     <Card className="p-6">
@@ -177,9 +293,8 @@ export function ZeroXSwap() {
             )}
           </div>
         </div>
-
         {quote && (
-          <div className="mt-4 p-4 bg-black rounded-lg">
+          <Card>
             <h3 className="text-sm font-medium">Swap Quote</h3>
             <div className="mt-2 space-y-2 text-sm">
               {quote.estimatedPriceImpact && (
@@ -195,7 +310,7 @@ export function ZeroXSwap() {
               )}
               {quote.buyAmount && (
                 <div>
-                  You Receive: {formatUnits(BigInt(quote.buyAmount), 18)} Tokens
+                  You Receive: {formatUnits(BigInt(quote.buyAmount), 18)} KUGO
                 </div>
               )}
               <div>
@@ -203,29 +318,74 @@ export function ZeroXSwap() {
                 {showCustomSlippage ? customSlippage : Number(slippage) * 100}%
               </div>
             </div>
-          </div>
+          </Card>
         )}
+
         {error && (
-          <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-            {error}
-          </div>
+          <Callout.Root color="red" variant="surface">
+            <Callout.Icon>
+              <CrossCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>{error}</Callout.Text>
+          </Callout.Root>
         )}
 
-        <Button
-          className="w-full"
-          disabled={!quote || isLoading || isSwapping || !swap}
-          onClick={() => swap?.()}>
-          {isLoading || isSwapping ? (
-            <>
-              <Spinner />
-              {isLoading ? "Getting Quote..." : "Swapping..."}
-            </>
-          ) : (
-            "Swap"
-          )}
-        </Button>
+        {(isApprovalConfirmed || isSwapConfirmed) && (
+          <Callout.Root color="green" variant="surface">
+            <Callout.Icon>
+              <CheckCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              {isApprovalConfirmed
+                ? "Approval completed!"
+                : "Swap completed successfully!"}{" "}
+              <a
+                href={`https://etherscan.io/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline">
+                View on Etherscan
+              </a>
+            </Callout.Text>
+          </Callout.Root>
+        )}
 
-        {/* <div className="text-xs text-gray-500">Powered by 0x Protocol</div> */}
+        {needsApproval ? (
+          <Button
+            disabled={!quote || isLoading || isTransacting}
+            onClick={handleApprove}
+            className="w-full">
+            {isApproving || isApprovalConfirming ? (
+              <>
+                <UpdateIcon className="animate-spin mr-2" />
+                {isApproving
+                  ? "Approve in Wallet..."
+                  : "Confirming Approval..."}
+              </>
+            ) : (
+              "Approve KUGO"
+            )}
+          </Button>
+        ) : (
+          <Button
+            disabled={!quote || isLoading || isTransacting}
+            onClick={handleSwap}
+            className="w-full">
+            {isLoading ? (
+              <>
+                <UpdateIcon className="animate-spin mr-2" />
+                Getting Quote...
+              </>
+            ) : isSwapping || isSwapConfirming ? (
+              <>
+                <UpdateIcon className="animate-spin mr-2" />
+                {isSwapping ? "Confirm in Wallet..." : "Confirming Swap..."}
+              </>
+            ) : (
+              "Swap"
+            )}
+          </Button>
+        )}
       </div>
     </Card>
   );

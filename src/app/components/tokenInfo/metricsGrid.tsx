@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TokenMetrics } from "./types";
-import { Card, DataList } from "@radix-ui/themes";
+import { Card, DataList, Heading, Separator } from "@radix-ui/themes";
 
 export function TokenMetricsGrid() {
   const [metrics, setMetrics] = useState<TokenMetrics | null>(null);
@@ -65,7 +65,9 @@ export function TokenMetricsGrid() {
   }
 
   return (
-    <Card>
+    <Card className="min-w-max">
+      <Heading>KUGO TOKEN METRICS</Heading>
+      <Separator className="w-full my-4" />
       <DataList.Root>
         <DataList.Item>
           <DataList.Label>Market Cap</DataList.Label>

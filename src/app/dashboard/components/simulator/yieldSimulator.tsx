@@ -6,6 +6,7 @@ import { usePriceFeeds } from "@/app/hooks/usePriceFeeds";
 import { MetricsGrid } from "./metricBox";
 import { YieldChart } from "./yieldChart";
 import { ComparisonRow, ComparisonTable } from "./strategyComparison";
+import Image from "next/image";
 
 export const YieldSimulator = () => {
   const [ethAmount, setEthAmount] = useState(1);
@@ -43,11 +44,7 @@ export const YieldSimulator = () => {
   };
 
   return (
-    <Card className="min-w-[650px] min-h-max">
-      <Heading size="5" mb="4">
-        Simulator
-      </Heading>
-
+    <Card className="w-full flex-grow-0 min-h-max">
       <Tabs.Root defaultValue="projection">
         <Tabs.List>
           <Tabs.Trigger value="projection">Yield Projection</Tabs.Trigger>
@@ -68,8 +65,10 @@ export const YieldSimulator = () => {
             </Flex>
           </Tabs.Content>
 
-          <Tabs.Content value="comparison">
-            <div className="space-y-4">
+          <Tabs.Content
+            value="comparison"
+            className="flex-grow-0 max-w-[600px]">
+            <div className="space-y-4 flex flex-grow-0">
               <ComparisonTable
                 traditional={{
                   apy: currentMetrics.ethStakingAPY,

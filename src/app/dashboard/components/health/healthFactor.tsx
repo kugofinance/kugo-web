@@ -1,5 +1,6 @@
-import { Card } from "@radix-ui/themes";
+import { Callout, Card } from "@radix-ui/themes";
 import { formatHealthFactor, getHealthFactorColor } from "../../utils/format";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 
 interface HealthFactorDisplayProps {
   healthFactor?: bigint;
